@@ -59,8 +59,8 @@
         _element.addClass(this.options.hideCls).wrap(_wrapTag);
 
         _self._on({
-                  change: "_onChange"
-                });     
+          change: "_onChange"
+        });     
         
         if( _element.is(':checked') ) {
           _element.parent().addClass(this.options.checkedCls);
@@ -75,8 +75,8 @@
         _element.addClass(this.options.hideCls).wrap(_wrapTag);
 
         this._on({
-                  change: "_onChange"
-                });
+          change: "_onChange"
+        });
 
         if( _element.is(':checked') ) {
           _element.parent().addClass(this.options.selectedCls);
@@ -99,28 +99,29 @@
         if( _element.is(':checked') ) { 
           _element.parent().addClass(_options.checkedCls); 
         } 
-        else {  _element.parent().removeClass(_options.checkedCls);  }
+        else {  
+          _element.parent().removeClass(_options.checkedCls);  
+        }
         if( _element.is(':disabled') ) { 
           _element.parent().addClass(_options.disabledCls); 
         } 
-        else {  _element.parent().removeClass(_options.disabledCls);   }
-
+        else {  
+          _element.parent().removeClass(_options.disabledCls);
+        }
       } else if( _self._getInputType(_element) == 'radio') {
-
         // radio button may contain groups! - so check for group
         $('input[name="'+_element.attr('name')+'"]').each(function() {
+          if( $(this).is(':checked') ) { 
+            $(this).parent().addClass(_options.selectedCls); 
+          } else {
+            $(this).parent().removeClass(_options.selectedCls);                 
+          }
 
-            if( $(this).is(':checked') ) { 
-              $(this).parent().addClass(_options.selectedCls); 
-            } else {
-              $(this).parent().removeClass(_options.selectedCls);                 
-            }
-
-            if( $(this).is(':disabled') ) { 
-              $(this).parent().addClass(_options.disabledCls); 
-            } else {
-              $(this).parent().removeClass(_options.disabledCls);                 
-            }
+          if( $(this).is(':disabled') ) { 
+            $(this).parent().addClass(_options.disabledCls); 
+          } else {
+            $(this).parent().removeClass(_options.disabledCls);                 
+          }
         });  
         
       }
@@ -128,6 +129,10 @@
 
     _getInputType: function(element){
       return element.attr('type');
+    },
+
+    redraw: function() {
+      this._onChange();
     },
 
     destroy: function() {
