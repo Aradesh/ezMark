@@ -13,65 +13,133 @@
  * At first, include both the css and js file at the top
  * 
  * Then, simply use: 
- * 	$('selector').ezMark([options]);
+ * $('selector').ezMark([options]);
  *  
  * [options] accepts following JSON properties:
  *  checkboxCls - custom Checkbox Class
  *  checkedCls  - checkbox Checked State's Class
  *  radioCls    - custom radiobutton Class
  *  selectedCls - radiobutton's Selected State's Class
+ *  disabledCls - class for disabled input
  *  
  * </usage>
  * 
  * View Documention/Demo here:
  * http://www.itsalif.info/content/ezmark-jquery-checkbox-radiobutton-plugin
  * 
- * @author Abdullah Rubiyath
- * @version 1.0
- * @date June 27, 2010
+ * @author Abdullah Rubiyath, Vladimir Kuleba
+ * @version 1.2
+ * @date April 23, 2014
  */
+(function($){
 
-(function($) {
-  $.fn.ezMark = function(options) {
-	options = options || {}; 
-	var defaultOpt = { 
-		checkboxCls   	: options.checkboxCls || 'ez-checkbox' , radioCls : options.radioCls || 'ez-radio' ,	
-		checkedCls 		: options.checkedCls  || 'ez-checked'  , selectedCls : options.selectedCls || 'ez-selected' , 
-		hideCls  	 	: 'ez-hide'
-	};
-    return this.each(function() {
-    	var $this = $(this);
-    	var wrapTag = $this.attr('type') == 'checkbox' ? '<div class="'+defaultOpt.checkboxCls+'">' : '<div class="'+defaultOpt.radioCls+'">';
-    	// for checkbox
-    	if( $this.attr('type') == 'checkbox') {
-    		$this.addClass(defaultOpt.hideCls).wrap(wrapTag).change(function() {
-    			if( $(this).is(':checked') ) { 
-    				$(this).parent().addClass(defaultOpt.checkedCls); 
-    			} 
-    			else {	$(this).parent().removeClass(defaultOpt.checkedCls); 	}
-    		});
-    		
-    		if( $this.is(':checked') ) {
-				$this.parent().addClass(defaultOpt.checkedCls);    		
-    		}
-    	} 
-    	else if( $this.attr('type') == 'radio') {
+  $.widget("customforms.ezMark", {
 
-    		$this.addClass(defaultOpt.hideCls).wrap(wrapTag).change(function() {
-    			// radio button may contain groups! - so check for group
-   				$('input[name="'+$(this).attr('name')+'"]').each(function() {
-   	    			if( $(this).is(':checked') ) { 
-   	    				$(this).parent().addClass(defaultOpt.selectedCls); 
-   	    			} else {
-   	    				$(this).parent().removeClass(defaultOpt.selectedCls);     	    			
-   	    			}
-   				});
-    		});
-    		
-    		if( $this.is(':checked') ) {
-				$this.parent().addClass(defaultOpt.selectedCls);    		
-    		}    		
-    	}
-    });
-  }
-})(jQuery);
+    options: {
+        checkboxCls : 'ez-checkbox',
+        checkedCls  : 'ez-checked',
+        radioCls    : 'ez-radio',
+        selectedCls : 'ez-selected',
+        disabledCls : 'ez-disabled',
+        hideCls     : 'ez-hide'
+    },
+
+    _create : function(){
+      this._initDecorator();
+    },
+
+    _initDecorator : function(){
+      var _self    = this,
+          _element = this.element,
+          _wrapTag = _element.attr('type') == 'checkbox' ? '<div class="'+this.options.checkboxCls+'">' : '<div class="'+this.options.radioCls+'">';
+
+      // for checkbox
+      if( _self._getInputType(_element) == 'checkbox') {
+
+        _element.addClass(this.options.hideCls).wrap(_wrapTag);
+
+        _self._on({
+                  change: "_onChange"
+                });     
+        
+        if( _element.is(':checked') ) {
+          _element.parent().addClass(this.options.checkedCls);
+        }
+
+        if( _element.is(':disabled') ) { 
+          _element.parent().addClass(this.options.disabledCls); 
+        } 
+
+      } else if( _self._getInputType(_element) == 'radio') {
+
+        _element.addClass(this.options.hideCls).wrap(_wrapTag);
+
+        this._on({
+                  change: "_onChange"
+                });
+
+        if( _element.is(':checked') ) {
+          _element.parent().addClass(this.options.selectedCls);
+        }
+
+        if( _element.is(':disabled') ) { 
+          _element.parent().addClass(this.options.disabledCls); 
+        }     
+      }
+    },
+
+    _onChange: function (event) {
+      var _self = this,
+          _element = this.element,
+          _options = this.options;
+
+      // for checkbox
+      if( _self._getInputType(_element) == 'checkbox') {
+
+        if( _element.is(':checked') ) { 
+          _element.parent().addClass(_options.checkedCls); 
+        } 
+        else {  _element.parent().removeClass(_options.checkedCls);  }
+        if( _element.is(':disabled') ) { 
+          _element.parent().addClass(_options.disabledCls); 
+        } 
+        else {  _element.parent().removeClass(_options.disabledCls);   }
+
+      } else if( _self._getInputType(_element) == 'radio') {
+
+        // radio button may contain groups! - so check for group
+        $('input[name="'+_element.attr('name')+'"]').each(function() {
+
+            if( $(this).is(':checked') ) { 
+              $(this).parent().addClass(_options.selectedCls); 
+            } else {
+              $(this).parent().removeClass(_options.selectedCls);                 
+            }
+
+            if( $(this).is(':disabled') ) { 
+              $(this).parent().addClass(_options.disabledCls); 
+            } else {
+              $(this).parent().removeClass(_options.disabledCls);                 
+            }
+        });  
+        
+      }
+    },
+
+    _getInputType: function(element){
+      return element.attr('type');
+    },
+
+    destroy: function() {
+        this.element
+            .unwrap()
+            .removeClass(this.options.hideCls)
+            .off( "change" );
+ 
+        // Call the base destroy function.
+        $.Widget.prototype.destroy.call( this );
+    }
+
+  });
+
+}(jQuery));
